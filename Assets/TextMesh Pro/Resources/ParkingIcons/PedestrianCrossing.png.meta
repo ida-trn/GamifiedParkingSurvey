@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      PedestrianCrossing_0: -4422241044450703469
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

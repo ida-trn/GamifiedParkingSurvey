@@ -15,7 +15,7 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [Header("Identity")]
     public string spotId;
 
-    [Tooltip("If true, Spot ID and GameObject name update automatically when street/side/region/type/number changes.")]
+    [Tooltip("If true, Spot ID and GameObject name update automatically when street/side/region/type/number changes. Spot ID uses the detailed A1-A6 classification; Spot Number itself is preserved unless explicitly renumbered.")]
     public bool autoUpdateSpotIdInInspector = true;
 
     [Header("Street Location Data")]
@@ -33,13 +33,13 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public StreetSide streetSide = StreetSide.Unknown;
 
-    [Tooltip("Will be assigned manually or automatically by ParkingSpotIdAssigner.")]
+    [Tooltip("Global unique number for this physical parking spot. Assigned by ParkingSpotIdAssigner. Changing street, side, region, or parking type does not change this number.")]
     public int spotNumber = 0;
 
     [Header("Choice Alternative Data")]
     public RegionType region = RegionType.Inner;
 
-    [Tooltip("NormalParkingSpot = normal selectable parking. NoParkingZone = forbidden area, but still selectable/parkable in the survey.")]
+    [Tooltip("NormalParkingSpot = normal selectable parking. NoParkingZone = physically unavailable for parking; it remains visible/clickable only to show an explanation.")]
     public ParkingAreaKind parkingAreaKind = ParkingAreaKind.NormalParkingSpot;
 
     public ParkingType parkingType = ParkingType.Legal;
@@ -47,6 +47,19 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [Header("Illegal Parking Details")]
     [Tooltip("Use None only for legal parking. For illegal parking, choose the reason.")]
     public IllegalReason illegalReason = IllegalReason.None;
+
+    [Header("Physical Parking Availability")]
+    [Tooltip(
+        "Automatically controlled by Parking Area Kind. " +
+        "NoParkingZone = physically blocked/unavailable; NormalParkingSpot = selectable. " +
+        "You do not need to change this checkbox manually."
+    )]
+    public bool parkingPhysicallyBlocked = false;
+
+    [TextArea(2, 4)]
+    [Tooltip("Message shown when the participant clicks a physically blocked parking place.")]
+    public string physicallyBlockedMessage =
+        "پارک کردن در این محل به دلیل وجود مانع فیزیکی امکان‌پذیر نیست.";
 
     [Header("Legal Parking Details")]
     [Tooltip("Use None for normal legal parking. Choose a feature only for special legal spaces such as smart parking or disabled parking.")]
@@ -72,33 +85,28 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public Vector3 reasonLabelLocalOffset = new Vector3(0f, 0f, -1f);
 
-    [Tooltip("Width and height of the text canvas. Increase X/Y if the wrapped text is too narrow.")]
-    public Vector2 reasonLabelCanvasSize = new Vector2(120f, 90f);
+    [Tooltip("Fallback canvas size used only when Fit Label Inside Parking Spot is disabled.")]
+    public Vector2 reasonLabelCanvasSize = new Vector2(120f, 45f);
 
+    [Tooltip("Base world-space scale used by the label. The script compensates for stretched parking spots so the text itself is not stretched.")]
     public float reasonLabelCanvasScale = 0.01f;
 
-    [Tooltip("Font size used when Auto Size is disabled.")]
-    public float reasonLabelFontSize = 30f;
+    [Header("Persian Label Fit")]
+    [Tooltip("Automatically sizes the label canvas from this parking spot's SpriteRenderer so the label stays inside this spot instead of overlapping neighboring spots.")]
+    public bool fitReasonLabelInsideSpot = true;
 
-    [Header("Persian Label Auto Size")]
-    [Tooltip("Uses the same Auto Size behavior shown in the RTL Text Mesh Pro Inspector.")]
-    public bool reasonLabelAutoSize = true;
+    [Tooltip("Empty margin kept on EACH side of the parking spot. 0.08 means 8% on every side.")]
+    [Range(0f, 0.40f)]
+    public float reasonLabelMarginFraction = 0.08f;
 
-    [Min(1f)]
-    [Tooltip("Smallest font size Auto Size may use.")]
-    public float reasonLabelAutoSizeMin = 20f;
+    [Tooltip("Minimum TMP auto-size font size.")]
+    public float reasonLabelMinFontSize = 20f;
 
-    [Min(1f)]
-    [Tooltip("Largest font size Auto Size may use.")]
-    public float reasonLabelAutoSizeMax = 200f;
+    [Tooltip("Maximum TMP auto-size font size.")]
+    public float reasonLabelMaxFontSize = 1000f;
 
-    [Header("Keep Label Inside Parking Spot")]
-    [Tooltip("The text Canvas may be smaller than the spot, but it can never become wider or taller than the parking sprite.")]
-    public bool constrainReasonLabelToSprite = true;
-
-    [Range(0.5f, 1f)]
-    [Tooltip("1 = use the full sprite bounds. A value such as 0.94 leaves a small safe margin inside the parking spot.")]
-    public float reasonLabelSpriteBoundsPadding = 0.94f;
+    [Tooltip("Used only when Fit Label Inside Parking Spot is disabled.")]
+    public float reasonLabelFontSize = 20f;
 
     public Color reasonLabelColor = Color.black;
 
@@ -136,17 +144,29 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     [Header("Colors")]
     public Color legalFreeColor = Color.green;
-    public Color illegalFreeColor = Color.red;
+    [Tooltip("Orange for illegal parking reasons with no financial fine, such as intersection corners and pedestrian crossings. Color: #FF4800.")]
+    public Color illegalFreeColor = new Color32(255, 72, 0, 255);
+
+    [Tooltip("Color for smart parking spots / پارکینگ هوشمند.")]
+    public Color smartParkingFreeColor = new Color32(255, 72, 0, 255);
 
     [Tooltip("Color for legal parking spots that are reserved for disabled people / ویژه معلولین.")]
     public Color disabledParkingFreeColor = new Color32(52, 52, 255, 255);
 
-    [Tooltip("Color for parkable no-parking zones. They are still illegal, but visually separated from normal illegal spots.")]
-    public Color noParkingZoneFreeColor = new Color(1f, 0.45f, 0f);
+    [Tooltip("Color for illegal parking reasons that should use the stronger fined/enforced red: No Parking Sign, No Stopping Sign, Driveway Entrance, and Bus Stop.")]
+    public Color finedIllegalFreeColor = new Color32(229, 0, 0, 255);
+
+    [Tooltip("Color for no-parking zones / غیرمجاز. Yellow: #FFEB00.")]
+    public Color noParkingZoneFreeColor = new Color32(255, 235, 0, 255);
 
     public Color occupiedColor = new Color(0.7f, 0.7f, 0.7f);
     public Color hoverColor = Color.yellow;
     public Color parkedByPlayerColor = Color.blue;
+
+    [Header("Pointer Selection")]
+    [Min(1f)]
+    [Tooltip("Maximum pointer movement still treated as a click/tap instead of a map drag.")]
+    public float clickMovementTolerancePixels = 15f;
 
     private SpriteRenderer sr;
     private bool isHighlighted = false;
@@ -155,6 +175,7 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         sr = GetComponent<SpriteRenderer>();
 
+        ApplyIllegalColorMigrationDefaults();
         UpdateStreetCodeAndName();
 
         if (string.IsNullOrWhiteSpace(spotId) || spotId == "0")
@@ -180,12 +201,42 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void OnValidate()
     {
+        ApplyIllegalColorMigrationDefaults();
+        RefreshAfterDataChange(autoUpdateSpotIdInInspector);
+    }
+
+    private void ApplyIllegalColorMigrationDefaults()
+    {
+        // Unity preserves old serialized Inspector values after a script change.
+        // Migrate older no-fine illegal colors to the new orange #FF4800.
+        Color oldNoFineIllegalColor = new Color32(255, 31, 31, 255);
+
+        if (illegalFreeColor == Color.red || illegalFreeColor == oldNoFineIllegalColor)
+            illegalFreeColor = new Color32(255, 72, 0, 255);
+
+        // Migrate the old orange NoParkingZone color to the new yellow #FFEB00.
+        Color oldNoParkingZoneColor = new Color(1f, 0.45f, 0f, 1f);
+
+        if (noParkingZoneFreeColor == oldNoParkingZoneColor)
+            noParkingZoneFreeColor = new Color32(255, 235, 0, 255);
+    }
+
+    /// <summary>
+    /// Refreshes all derived parking-spot data after street, side, legality,
+    /// area kind, region, or related Inspector data changes.
+    ///
+    /// IMPORTANT: This method never changes spotNumber.
+    /// If regenerateSpotId is true, it rebuilds the descriptive Spot ID from
+    /// the current Street + Side + A1-A6 alternative + existing Spot Number.
+    /// </summary>
+    public void RefreshAfterDataChange(bool regenerateSpotId = true)
+    {
         sr = GetComponent<SpriteRenderer>();
 
         UpdateStreetCodeAndName();
         ValidateParkingLogic();
 
-        if (autoUpdateSpotIdInInspector)
+        if (regenerateSpotId)
         {
             GenerateSpotId();
         }
@@ -196,8 +247,19 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void ValidateParkingLogic()
     {
-        if (parkingAreaKind == ParkingAreaKind.NoParkingZone)
+        // Physical availability is derived automatically from ParkingAreaKind.
+        // This prevents having to tick hundreds of NoParkingZone spots by hand
+        // and guarantees that ONLY NoParkingZone spots use the blocked behavior.
+        parkingPhysicallyBlocked =
+            parkingAreaKind == ParkingAreaKind.NoParkingZone;
+
+        // A physically blocked place is a static map obstruction, not a
+        // scenario-occupied parking choice. Keep its normal map color and
+        // never let occupancy mark it grey.
+        if (IsPhysicallyBlockedParking())
         {
+            isOccupied = false;
+            occupiedByPlayer = false;
             parkingType = ParkingType.Illegal;
         }
 
@@ -217,19 +279,144 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             return;
 
         reasonLabelLocalOffset = new Vector3(0f, 0f, -1f);
-        reasonLabelCanvasSize = new Vector2(120f, 90f);
+        reasonLabelCanvasSize = new Vector2(120f, 45f);
         reasonLabelCanvasScale = 0.01f;
-        reasonLabelFontSize = 30f;
-        reasonLabelAutoSize = true;
-        reasonLabelAutoSizeMin = 18f;
-        reasonLabelAutoSizeMax = 200f;
-        constrainReasonLabelToSprite = true;
-        reasonLabelSpriteBoundsPadding = 0.94f;
+
+        fitReasonLabelInsideSpot = true;
+        reasonLabelMarginFraction = 0.08f;
+
+        reasonLabelMinFontSize = 20f;
+        reasonLabelMaxFontSize = 1000f;
+        reasonLabelFontSize = 20f;
+
         reasonLabelColor = Color.black;
         reasonLabelOutlineColor = Color.black;
         reasonLabelOutlineThickness = 0.307f;
         reasonLabelSortingOrder = 500;
         reasonLabelRotationZ = 270f;
+    }
+
+    /// <summary>
+    /// Returns the parking spot's visible size in this GameObject's local space.
+    /// This lets the label use the actual spot as its boundary instead of a
+    /// hard-coded 120 x 45 canvas.
+    /// </summary>
+    private Vector2 GetParkingSpotLocalVisualSize()
+    {
+        if (sr == null)
+            sr = GetComponent<SpriteRenderer>();
+
+        if (sr != null)
+        {
+            Vector3 localBoundsSize = sr.localBounds.size;
+
+            if (localBoundsSize.x > 0.0001f && localBoundsSize.y > 0.0001f)
+            {
+                return new Vector2(
+                    Mathf.Abs(localBoundsSize.x),
+                    Mathf.Abs(localBoundsSize.y)
+                );
+            }
+
+            if (sr.sprite != null)
+            {
+                Vector3 spriteSize = sr.sprite.bounds.size;
+
+                if (spriteSize.x > 0.0001f && spriteSize.y > 0.0001f)
+                {
+                    return new Vector2(
+                        Mathf.Abs(spriteSize.x),
+                        Mathf.Abs(spriteSize.y)
+                    );
+                }
+            }
+        }
+
+        return new Vector2(
+            Mathf.Max(0.01f, reasonLabelCanvasSize.x * reasonLabelCanvasScale),
+            Mathf.Max(0.01f, reasonLabelCanvasSize.y * reasonLabelCanvasScale)
+        );
+    }
+
+    /// <summary>
+    /// True when the label is rotated about 90 or 270 degrees, so its canvas
+    /// width/height are swapped relative to the parking spot.
+    /// </summary>
+    private bool ReasonLabelRotationSwapsAxes()
+    {
+        float z = Mathf.Repeat(reasonLabelRotationZ, 360f);
+
+        return Mathf.Abs(Mathf.DeltaAngle(z, 90f)) < 1f ||
+               Mathf.Abs(Mathf.DeltaAngle(z, 270f)) < 1f;
+    }
+
+    /// <summary>
+    /// Fits the label inside the parking spot and compensates for non-uniform
+    /// scaling inherited from the parking spot / road prefab.
+    /// </summary>
+    private void FitReasonLabelCanvasInsideSpot(RectTransform canvasRect)
+    {
+        if (canvasRect == null || reasonLabelCanvas == null)
+            return;
+
+        if (!fitReasonLabelInsideSpot)
+        {
+            reasonLabelCanvas.transform.localScale =
+                Vector3.one * Mathf.Max(0.0001f, reasonLabelCanvasScale);
+
+            canvasRect.sizeDelta = reasonLabelCanvasSize;
+            return;
+        }
+
+        Vector2 spotLocalSize = GetParkingSpotLocalVisualSize();
+
+        Vector3 lossyScale = transform.lossyScale;
+        float parentScaleX = Mathf.Max(0.0001f, Mathf.Abs(lossyScale.x));
+        float parentScaleY = Mathf.Max(0.0001f, Mathf.Abs(lossyScale.y));
+        float baseScale = Mathf.Max(0.0001f, reasonLabelCanvasScale);
+
+        float spotWorldWidth = spotLocalSize.x * parentScaleX;
+        float spotWorldHeight = spotLocalSize.y * parentScaleY;
+
+        float margin = Mathf.Clamp(reasonLabelMarginFraction, 0f, 0.40f);
+        float usableFraction = Mathf.Max(0.05f, 1f - (margin * 2f));
+
+        spotWorldWidth *= usableFraction;
+        spotWorldHeight *= usableFraction;
+
+        bool swapsAxes = ReasonLabelRotationSwapsAxes();
+
+        if (swapsAxes)
+        {
+            reasonLabelCanvas.transform.localScale = new Vector3(
+                baseScale / parentScaleY,
+                baseScale / parentScaleX,
+                1f
+            );
+
+            canvasRect.sizeDelta = new Vector2(
+                spotWorldHeight / baseScale,
+                spotWorldWidth / baseScale
+            );
+        }
+        else
+        {
+            reasonLabelCanvas.transform.localScale = new Vector3(
+                baseScale / parentScaleX,
+                baseScale / parentScaleY,
+                1f
+            );
+
+            canvasRect.sizeDelta = new Vector2(
+                spotWorldWidth / baseScale,
+                spotWorldHeight / baseScale
+            );
+        }
+
+        canvasRect.anchorMin = new Vector2(0.5f, 0.5f);
+        canvasRect.anchorMax = new Vector2(0.5f, 0.5f);
+        canvasRect.pivot = new Vector2(0.5f, 0.5f);
+        canvasRect.anchoredPosition = Vector2.zero;
     }
 
     public void UpdateStreetCodeAndName()
@@ -322,9 +509,14 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         string sideCode = GetStreetSideCode();
         string altId = GetAlternativeId();
 
+        // Never silently assign 1 to a new/unassigned spot.
+        // That could create duplicate Spot Numbers. New or duplicated spots
+        // should receive a number through ParkingSpotIdAssigner.
         if (spotNumber <= 0)
         {
-            spotNumber = 1;
+            spotId = $"{streetCode}_{sideCode}_{altId}_UNASSIGNED";
+            gameObject.name = spotId;
+            return;
         }
 
         spotId = $"{streetCode}_{sideCode}_{altId}_{spotNumber:000}";
@@ -368,7 +560,25 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         return legalParkingFeature.ToString();
     }
 
+    /// <summary>
+    /// Detailed six-alternative classification used by the Spot ID:
+    /// A1 = Inner + Legal
+    /// A2 = Inner + Illegal
+    /// A3 = Outer + Legal
+    /// A4 = Outer + Illegal
+    /// A5 = Far + Legal
+    /// A6 = Far + Illegal
+    /// </summary>
     public string GetAlternativeId()
+    {
+        return GetAlternativeId6();
+    }
+
+    /// <summary>
+    /// Six-alternative version.
+    /// Keeps legal and illegal parking separate in the Far region.
+    /// </summary>
+    public string GetAlternativeId6()
     {
         if (region == RegionType.Inner && parkingType == ParkingType.Legal)
             return "A1";
@@ -382,7 +592,34 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (region == RegionType.Outer && parkingType == ParkingType.Illegal)
             return "A4";
 
-        return "FAR_NOT_MODELED";
+        if (region == RegionType.Far && parkingType == ParkingType.Legal)
+            return "A5";
+
+        if (region == RegionType.Far && parkingType == ParkingType.Illegal)
+            return "A6";
+
+        return "UNKNOWN";
+    }
+
+    /// <summary>
+    /// Collapsed five-alternative version for analysis/model comparison:
+    /// A1 = Inner + Legal
+    /// A2 = Inner + Illegal
+    /// A3 = Outer + Legal
+    /// A4 = Outer + Illegal
+    /// A5 = Far, regardless of legal/illegal status.
+    ///
+    /// This method does NOT change the Spot ID. It is intended for logging
+    /// or later model estimation when you want the five-alternative logic.
+    /// </summary>
+    public string GetAlternativeId5()
+    {
+        string detailedAlternative = GetAlternativeId6();
+
+        if (detailedAlternative == "A6")
+            return "A5";
+
+        return detailedAlternative;
     }
 
     public string GetIllegalReasonPersianText()
@@ -390,10 +627,10 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         switch (illegalReason)
         {
             case IllegalReason.DrivewayEntrance:
-                return "درب پارکینگ";
+                return "جلوی ورودی پارکینگ";
 
             case IllegalReason.NoParkingSign:
-                return "پارک ممنوع";
+                return "تابلو پارک ممنوع";
 
             case IllegalReason.NoStoppingSign:
                 return "توقف ممنوع";
@@ -437,6 +674,13 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public string GetParkingLabelPersianText()
     {
+        // All orange NoParkingZone spots use one consistent visible label,
+        // regardless of their IllegalReason value.
+        if (IsNoParkingZone())
+        {
+            return "غیرمجاز";
+        }
+
         if (parkingType == ParkingType.Illegal)
         {
             return GetIllegalReasonPersianText();
@@ -455,6 +699,11 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (!showPersianReasonLabel)
             return false;
 
+        // NoParkingZone spots are always shown with the label "غیرمجاز",
+        // even when IllegalReason is None.
+        if (IsNoParkingZone())
+            return true;
+
         if (parkingType == ParkingType.Illegal)
             return illegalReason != IllegalReason.None;
 
@@ -469,6 +718,15 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 #if UNITY_EDITOR
         if (!Application.isPlaying)
         {
+            // OnValidate and OnEnable can also run while Unity is importing or
+            // inspecting a prefab asset. Never create/delete label objects in
+            // an asset outside Prefab Mode; only refresh scene instances.
+            if (EditorUtility.IsPersistent(this) ||
+                PrefabUtility.IsPartOfPrefabAsset(gameObject))
+            {
+                return;
+            }
+
             EditorApplication.delayCall -= DelayedRefreshReasonLabel;
             EditorApplication.delayCall += DelayedRefreshReasonLabel;
             return;
@@ -495,6 +753,17 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         if (obj == null)
             return;
 
+#if UNITY_EDITOR
+        // DestroyImmediate on a saved prefab/asset object is blocked by
+        // Unity to prevent data loss. Asset contents must be edited explicitly
+        // in Prefab Mode, not by this automatic scene-label cleanup.
+        if (EditorUtility.IsPersistent(obj) ||
+            PrefabUtility.IsPartOfPrefabAsset(obj))
+        {
+            return;
+        }
+#endif
+
         if (Application.isPlaying)
         {
             Destroy(obj);
@@ -510,225 +779,34 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         Canvas canvasToKeep = null;
         RTLTextMeshPro labelToKeep = null;
 
-        Transform[] allTransforms = GetComponentsInChildren<Transform>(true);
-        System.Collections.Generic.List<GameObject> objectsToDelete =
-            new System.Collections.Generic.List<GameObject>();
-
-        // Prefer the original hierarchy: IllegalReasonCanvas directly under ParkingSpot.
-        foreach (Transform item in allTransforms)
+        for (int i = transform.childCount - 1; i >= 0; i--)
         {
-            if (item == null || item == transform)
-                continue;
+            Transform child = transform.GetChild(i);
 
-            if (item.name != "IllegalReasonCanvas")
-                continue;
-
-            Canvas canvas = item.GetComponent<Canvas>();
-
-            if (canvas == null)
+            if (child.name == "IllegalReasonLabel")
             {
-                objectsToDelete.Add(item.gameObject);
+                DestroyObjectSafe(child.gameObject);
                 continue;
             }
 
-            if (canvasToKeep == null && item.parent == transform)
+            if (child.name != "IllegalReasonCanvas")
+                continue;
+
+            Canvas canvas = child.GetComponent<Canvas>();
+
+            if (canvas != null && canvasToKeep == null)
             {
                 canvasToKeep = canvas;
-                continue;
+                labelToKeep = canvas.GetComponentInChildren<RTLTextMeshPro>(true);
             }
-
-            if (canvasToKeep == null)
+            else
             {
-                canvasToKeep = canvas;
-                continue;
+                DestroyObjectSafe(child.gameObject);
             }
-
-            objectsToDelete.Add(item.gameObject);
-        }
-
-        // Do not re-parent a Transform inside a Prefab instance.
-        // A Canvas under an obsolete root is deleted and a fresh direct-child
-        // Canvas is created instead. This avoids Unity's prefab re-parenting error.
-        if (canvasToKeep != null && canvasToKeep.transform.parent != transform)
-        {
-            objectsToDelete.Add(canvasToKeep.gameObject);
-            canvasToKeep = null;
-            labelToKeep = null;
-        }
-
-        // Remove obsolete roots from previous versions.
-        allTransforms = GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform item in allTransforms)
-        {
-            if (item == null || item == transform)
-                continue;
-
-            if (item.name == "ReasonLabelScaleRoot" ||
-                item.name == "IllegalReasonScaleRoot" ||
-                item.name == "IllegalReasonIconRoot")
-            {
-                objectsToDelete.Add(item.gameObject);
-            }
-        }
-
-        // Keep only one RTL label inside the surviving canvas.
-        if (canvasToKeep != null)
-        {
-            RTLTextMeshPro[] labels =
-                canvasToKeep.GetComponentsInChildren<RTLTextMeshPro>(true);
-
-            foreach (RTLTextMeshPro label in labels)
-            {
-                if (label == null)
-                    continue;
-
-                if (labelToKeep == null)
-                    labelToKeep = label;
-                else
-                    objectsToDelete.Add(label.gameObject);
-            }
-        }
-
-        // Remove loose labels not belonging to the surviving canvas.
-        allTransforms = GetComponentsInChildren<Transform>(true);
-
-        foreach (Transform item in allTransforms)
-        {
-            if (item == null || item == transform)
-                continue;
-
-            if (item.name != "IllegalReasonLabel")
-                continue;
-
-            if (labelToKeep == null || item.gameObject != labelToKeep.gameObject)
-                objectsToDelete.Add(item.gameObject);
-        }
-
-        // Delete only topmost scheduled objects to avoid destroying twice.
-        System.Collections.Generic.HashSet<GameObject> scheduled =
-            new System.Collections.Generic.HashSet<GameObject>(objectsToDelete);
-
-        foreach (GameObject obj in objectsToDelete)
-        {
-            if (obj == null)
-                continue;
-
-            bool parentAlsoScheduled = false;
-            Transform parent = obj.transform.parent;
-
-            while (parent != null && parent != transform)
-            {
-                if (scheduled.Contains(parent.gameObject))
-                {
-                    parentAlsoScheduled = true;
-                    break;
-                }
-
-                parent = parent.parent;
-            }
-
-            if (!parentAlsoScheduled)
-                DestroyObjectSafe(obj);
         }
 
         reasonLabelCanvas = canvasToKeep;
         reasonLabel = labelToKeep;
-    }
-
-    private Vector2 GetParkingSpriteLocalSize()
-    {
-        if (sr == null)
-            sr = GetComponent<SpriteRenderer>();
-
-        if (sr == null)
-            return Vector2.one;
-
-        if (sr.drawMode != SpriteDrawMode.Simple)
-            return sr.size;
-
-        if (sr.sprite != null)
-            return sr.sprite.bounds.size;
-
-        return Vector2.one;
-    }
-
-    private bool IsReasonLabelQuarterTurn()
-    {
-        float angle = Mathf.Repeat(reasonLabelRotationZ, 360f);
-
-        return Mathf.Abs(Mathf.DeltaAngle(angle, 90f)) < 0.01f ||
-               Mathf.Abs(Mathf.DeltaAngle(angle, 270f)) < 0.01f;
-    }
-
-    private Vector2 GetMaximumCanvasSizeInsideSprite()
-    {
-        Vector2 spriteSize = GetParkingSpriteLocalSize();
-        float padding = Mathf.Clamp(reasonLabelSpriteBoundsPadding, 0.5f, 1f);
-
-        // Account for an optional X/Y offset so the Canvas still remains
-        // completely inside the sprite after being moved.
-        float availableSpriteX = Mathf.Max(
-            0.001f,
-            spriteSize.x * padding - 2f * Mathf.Abs(reasonLabelLocalOffset.x)
-        );
-
-        float availableSpriteY = Mathf.Max(
-            0.001f,
-            spriteSize.y * padding - 2f * Mathf.Abs(reasonLabelLocalOffset.y)
-        );
-
-        float canvasScaleX = Mathf.Abs(reasonLabelCanvasScale) > 0.000001f
-            ? Mathf.Abs(reasonLabelCanvasScale)
-            : 1f;
-
-        float canvasScaleY = canvasScaleX;
-
-        // When the Canvas is rotated 90° or 270°, its local width lies along
-        // the sprite's local height and its local height lies along the
-        // sprite's local width.
-        if (IsReasonLabelQuarterTurn())
-        {
-            return new Vector2(
-                availableSpriteY / canvasScaleX,
-                availableSpriteX / canvasScaleY
-            );
-        }
-
-        return new Vector2(
-            availableSpriteX / canvasScaleX,
-            availableSpriteY / canvasScaleY
-        );
-    }
-
-    private Vector2 GetConstrainedReasonLabelCanvasSize()
-    {
-        Vector2 requested = new Vector2(
-            Mathf.Max(0.001f, Mathf.Abs(reasonLabelCanvasSize.x)),
-            Mathf.Max(0.001f, Mathf.Abs(reasonLabelCanvasSize.y))
-        );
-
-        if (!constrainReasonLabelToSprite)
-            return requested;
-
-        Vector2 maximum = GetMaximumCanvasSizeInsideSprite();
-
-        return new Vector2(
-            Mathf.Min(requested.x, maximum.x),
-            Mathf.Min(requested.y, maximum.y)
-        );
-    }
-
-    private void ApplyConstrainedReasonLabelCanvasSize()
-    {
-        if (reasonLabelCanvas == null)
-            return;
-
-        RectTransform canvasRect =
-            reasonLabelCanvas.GetComponent<RectTransform>();
-
-        if (canvasRect != null)
-            canvasRect.sizeDelta = GetConstrainedReasonLabelCanvasSize();
     }
 
     private void CreateReasonLabel()
@@ -738,10 +816,8 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         canvasObject.transform.SetParent(transform, false);
         canvasObject.transform.localPosition = reasonLabelLocalOffset;
         canvasObject.transform.localRotation = Quaternion.Euler(0f, 0f, reasonLabelRotationZ);
-        canvasObject.transform.localScale = Vector3.one * reasonLabelCanvasScale;
 
         RectTransform canvasRect = canvasObject.AddComponent<RectTransform>();
-        canvasRect.sizeDelta = GetConstrainedReasonLabelCanvasSize();
 
         reasonLabelCanvas = canvasObject.AddComponent<Canvas>();
         reasonLabelCanvas.renderMode = RenderMode.WorldSpace;
@@ -752,6 +828,8 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             reasonLabelCanvas.sortingLayerID = sr.sortingLayerID;
         }
+
+        FitReasonLabelCanvasInsideSpot(canvasRect);
 
         GameObject textObject = new GameObject("IllegalReasonLabel");
         textObject.layer = gameObject.layer;
@@ -770,6 +848,15 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     private void RefreshReasonLabel()
     {
+#if UNITY_EDITOR
+        if (!Application.isPlaying &&
+            (EditorUtility.IsPersistent(this) ||
+             PrefabUtility.IsPartOfPrefabAsset(gameObject)))
+        {
+            return;
+        }
+#endif
+
         ApplyAutomaticLabelDefaults();
 
         CleanupReasonLabels();
@@ -799,7 +886,7 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         reasonLabelCanvas.transform.localPosition = reasonLabelLocalOffset;
         reasonLabelCanvas.transform.localRotation = Quaternion.Euler(0f, 0f, reasonLabelRotationZ);
-        reasonLabelCanvas.transform.localScale = Vector3.one * reasonLabelCanvasScale;
+
         reasonLabelCanvas.renderMode = RenderMode.WorldSpace;
         reasonLabelCanvas.overrideSorting = true;
         reasonLabelCanvas.sortingOrder = reasonLabelSortingOrder;
@@ -809,28 +896,33 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
             reasonLabelCanvas.sortingLayerID = sr.sortingLayerID;
         }
 
-        ApplyConstrainedReasonLabelCanvasSize();
+        RectTransform canvasRect = reasonLabelCanvas.GetComponent<RectTransform>();
+        if (canvasRect != null)
+        {
+            FitReasonLabelCanvasInsideSpot(canvasRect);
+        }
 
         reasonLabel.text = GetParkingLabelPersianText();
         reasonLabel.alignment = TextAlignmentOptions.Center;
-
-        float safeMin = Mathf.Max(1f, reasonLabelAutoSizeMin);
-        float safeMax = Mathf.Max(safeMin, reasonLabelAutoSizeMax);
-
-        reasonLabel.enableAutoSizing = reasonLabelAutoSize;
-        reasonLabel.fontSizeMin = safeMin;
-        reasonLabel.fontSizeMax = safeMax;
-
-        // Start Auto Size from the maximum, exactly like enabling Auto Size
-        // in the RTL Text Mesh Pro Inspector.
-        reasonLabel.fontSize = reasonLabelAutoSize
-            ? safeMax
-            : reasonLabelFontSize;
-
         reasonLabel.color = reasonLabelColor;
 
-        reasonLabel.textWrappingMode = TextWrappingModes.PreserveWhitespace;
-        reasonLabel.overflowMode = TextOverflowModes.Truncate;
+        if (fitReasonLabelInsideSpot)
+        {
+            reasonLabel.enableAutoSizing = true;
+            reasonLabel.fontSizeMin = Mathf.Max(1f, reasonLabelMinFontSize);
+            reasonLabel.fontSizeMax = Mathf.Max(reasonLabel.fontSizeMin, reasonLabelMaxFontSize);
+            reasonLabel.fontSize = reasonLabel.fontSizeMax;
+        }
+        else
+        {
+            reasonLabel.enableAutoSizing = false;
+            reasonLabel.fontSize = reasonLabelFontSize;
+        }
+
+        reasonLabel.textWrappingMode = TextWrappingModes.Normal;
+
+        // Never allow text geometry to spill into a neighboring parking spot.
+        reasonLabel.overflowMode = TextOverflowModes.Ellipsis;
 
         if (persianFontAsset != null)
         {
@@ -868,14 +960,15 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public void ApplyRecommendedLabelSettings()
     {
         reasonLabelLocalOffset = new Vector3(0f, 0f, -1f);
-        reasonLabelCanvasSize = new Vector2(120f, 90f);
+        reasonLabelCanvasSize = new Vector2(120f, 45f);
         reasonLabelCanvasScale = 0.01f;
-        reasonLabelFontSize = 30f;
-        reasonLabelAutoSize = true;
-        reasonLabelAutoSizeMin = 18f;
-        reasonLabelAutoSizeMax = 200f;
-        constrainReasonLabelToSprite = true;
-        reasonLabelSpriteBoundsPadding = 0.94f;
+
+        fitReasonLabelInsideSpot = true;
+        reasonLabelMarginFraction = 0.08f;
+        reasonLabelMinFontSize = 20f;
+        reasonLabelMaxFontSize = 1000f;
+        reasonLabelFontSize = 20f;
+
         reasonLabelColor = Color.black;
         reasonLabelOutlineColor = Color.black;
         reasonLabelOutlineThickness = 0.307f;
@@ -885,77 +978,31 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         RefreshReasonLabel();
     }
 
-#if UNITY_EDITOR
-    [InitializeOnLoadMethod]
-    private static void ScheduleOriginalHierarchyAutoSizeRefresh()
+    public bool IsPhysicallyBlockedParking()
     {
-        EditorApplication.delayCall -= OriginalHierarchyAutoSizeRefresh;
-        EditorApplication.delayCall += OriginalHierarchyAutoSizeRefresh;
+        // Derive from ParkingAreaKind as well as the serialized field so the
+        // behavior is correct even before OnValidate/Awake has refreshed it.
+        return parkingAreaKind == ParkingAreaKind.NoParkingZone;
     }
 
-    private static void OriginalHierarchyAutoSizeRefresh()
+    public string GetPhysicallyBlockedParkingMessagePersian()
     {
-        EditorApplication.delayCall -= OriginalHierarchyAutoSizeRefresh;
+        if (!string.IsNullOrWhiteSpace(physicallyBlockedMessage))
+            return physicallyBlockedMessage.Trim();
 
-        if (EditorApplication.isCompiling ||
-            EditorApplication.isUpdating ||
-            Application.isPlaying)
-        {
-            EditorApplication.delayCall += OriginalHierarchyAutoSizeRefresh;
-            return;
-        }
-
-        RebuildAllOriginalAutoSizeLabels(false);
+        return "پارک کردن در این محل به دلیل وجود مانع فیزیکی امکان‌پذیر نیست.";
     }
-
-    [MenuItem("Tools/Parking/Restore Original Labels And Apply Auto Size")]
-    private static void RestoreOriginalLabelsAndApplyAutoSize()
-    {
-        RebuildAllOriginalAutoSizeLabels(true);
-    }
-
-    [MenuItem("Tools/Parking/Keep All Text Labels Inside Their Spots")]
-    private static void KeepAllTextLabelsInsideTheirSpots()
-    {
-        RebuildAllOriginalAutoSizeLabels(true);
-    }
-
-    private static void RebuildAllOriginalAutoSizeLabels(bool showLog)
-    {
-        ParkingSpot[] spots = Resources.FindObjectsOfTypeAll<ParkingSpot>();
-        int rebuiltCount = 0;
-
-        foreach (ParkingSpot spot in spots)
-        {
-            if (spot == null || EditorUtility.IsPersistent(spot))
-                continue;
-
-            spot.reasonLabelAutoSize = true;
-            spot.reasonLabelAutoSizeMin =
-                Mathf.Max(18f, spot.reasonLabelAutoSizeMin);
-            spot.reasonLabelAutoSizeMax =
-                Mathf.Max(200f, spot.reasonLabelAutoSizeMax);
-            spot.constrainReasonLabelToSprite = true;
-            spot.reasonLabelSpriteBoundsPadding =
-                Mathf.Clamp(spot.reasonLabelSpriteBoundsPadding, 0.5f, 1f);
-
-            spot.RefreshReasonLabel();
-            EditorUtility.SetDirty(spot);
-            rebuiltCount++;
-        }
-
-        if (showLog)
-        {
-            Debug.Log(
-                $"[ParkingSpot] Restored the original direct Canvas hierarchy and applied Auto Size to {rebuiltCount} spots."
-            );
-        }
-    }
-#endif
 
     public bool IsModeledAlternative()
     {
-        return region == RegionType.Inner || region == RegionType.Outer;
+        // Physical obstructions remain visible/clickable map features for an
+        // explanation, but they are not parking alternatives in the study.
+        if (IsPhysicallyBlockedParking())
+            return false;
+
+        return region == RegionType.Inner ||
+               region == RegionType.Outer ||
+               region == RegionType.Far;
     }
 
     public bool IsLegal()
@@ -977,7 +1024,9 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         if (region == RegionType.Inner) return "inner";
         if (region == RegionType.Outer) return "outer";
-        return "far_not_modeled";
+        if (region == RegionType.Far) return "far";
+
+        return "unknown";
     }
 
     public bool HasParkingSegment()
@@ -1017,6 +1066,15 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OccupySpot()
     {
+        if (parkingPhysicallyBlocked)
+        {
+            isOccupied = false;
+            occupiedByPlayer = false;
+            isHighlighted = false;
+            UpdateVisual();
+            return;
+        }
+
         isOccupied = true;
         occupiedByPlayer = false;
         isHighlighted = false;
@@ -1025,6 +1083,9 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void MarkParkedByPlayer()
     {
+        if (IsPhysicallyBlockedParking())
+            return;
+
         isOccupied = true;
         occupiedByPlayer = true;
         isHighlighted = false;
@@ -1041,7 +1102,10 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void SetOccupied(bool occupied)
     {
-        isOccupied = occupied;
+        // Physical obstructions are static unavailable areas, not randomly
+        // occupied parking spaces. Keeping isOccupied=false preserves the
+        // spot's existing map color instead of turning it grey.
+        isOccupied = IsPhysicallyBlockedParking() ? false : occupied;
         occupiedByPlayer = false;
         isHighlighted = false;
         UpdateVisual();
@@ -1053,6 +1117,24 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
         isHighlighted = highlighted;
         UpdateVisual();
+    }
+
+    private bool UsesFinedIllegalColor()
+    {
+        if (parkingType != ParkingType.Illegal)
+            return false;
+
+        switch (illegalReason)
+        {
+            case IllegalReason.DrivewayEntrance:
+            case IllegalReason.NoParkingSign:
+            case IllegalReason.NoStoppingSign:
+            case IllegalReason.BusStop:
+                return true;
+
+            default:
+                return false;
+        }
     }
 
     private void UpdateVisualOnly()
@@ -1079,15 +1161,28 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             sr.color = noParkingZoneFreeColor;
         }
-        else if (parkingType == ParkingType.Legal && legalParkingFeature == LegalParkingFeature.DisabledParking)
+        else if (parkingType == ParkingType.Legal &&
+                 legalParkingFeature == LegalParkingFeature.SmartParking)
+        {
+            sr.color = smartParkingFreeColor;
+        }
+        else if (parkingType == ParkingType.Legal &&
+                 legalParkingFeature == LegalParkingFeature.DisabledParking)
         {
             sr.color = disabledParkingFreeColor;
         }
         else
         {
-            sr.color = parkingType == ParkingType.Legal
-                ? legalFreeColor
-                : illegalFreeColor;
+            if (parkingType == ParkingType.Legal)
+            {
+                sr.color = legalFreeColor;
+            }
+            else
+            {
+                sr.color = UsesFinedIllegalColor()
+                    ? finedIllegalFreeColor
+                    : illegalFreeColor;
+            }
         }
     }
 
@@ -1114,11 +1209,44 @@ public class ParkingSpot : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        CarParkingInteraction parkingInteraction = CarParkingInteraction.Instance;
+        // First line of defense against accidental selection:
+        // if the pointer travelled far enough to be a drag, do not treat the
+        // release as a parking-space click/tap.
+        if (eventData != null)
+        {
+            float pointerMovement = Vector2.Distance(
+                eventData.pressPosition,
+                eventData.position
+            );
+
+            if (pointerMovement >
+                Mathf.Max(1f, clickMovementTolerancePixels))
+            {
+                SetHighlighted(false);
+                return;
+            }
+        }
+
+        // Second line of defense for assisted map mode. The camera controller
+        // briefly suppresses parking clicks after mouse/finger drag or pinch.
+        AssistedMapCameraController mapController =
+            AssistedMapCameraController.Instance;
+
+        if (mapController != null &&
+            mapController.ShouldSuppressParkingSpotClick())
+        {
+            SetHighlighted(false);
+            return;
+        }
+
+        CarParkingInteraction parkingInteraction =
+            CarParkingInteraction.Instance;
 
         if (parkingInteraction == null)
         {
-            Debug.LogWarning("[ParkingSpot] No CarParkingInteraction instance found.");
+            Debug.LogWarning(
+                "[ParkingSpot] No CarParkingInteraction instance found."
+            );
             return;
         }
 

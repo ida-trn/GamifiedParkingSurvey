@@ -17,7 +17,7 @@ TagManager:
   - Agent
   - UI
   - Crossings
-  - 
+  - StreetLabels
   - 
   - 
   - 
@@ -52,6 +52,9 @@ TagManager:
     locked: 0
   - name: Road
     uniqueID: 2964449411
+    locked: 0
+  - name: StreetLabels
+    uniqueID: 2827610501
     locked: 0
   - name: Parking
     uniqueID: 750190829

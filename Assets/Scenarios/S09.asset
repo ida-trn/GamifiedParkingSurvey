@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scenarioId: S09
   dwellTimeMinutes: 360
-  timeLimitMinutes: 3
+  timeLimitMinutes: 2
   legalFeePerHour: 0
   citationProbability: 0.15
+  illegalFinePolicy: 1
   illegalFine: 120000
-  onTimeReward: 100
+  onTimeReward: 15
   legalOccupancyRate: 0.7
   illegalOccupancyRate: 0.1
-  assistedMode: 0
-  startPointIndex: 0
+  scarcityLevel: 1
+  assistedMode: 1
+  startPointIndex: 8

@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      intersection road-01_0: -1933685120906494837
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

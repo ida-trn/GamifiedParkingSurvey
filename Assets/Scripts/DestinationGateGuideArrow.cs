@@ -1,4 +1,5 @@
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
 
 public class DestinationGateGuideArrow : MonoBehaviour
 {
@@ -15,6 +16,16 @@ public class DestinationGateGuideArrow : MonoBehaviour
 
     [Tooltip("Drag the UI arrow Image RectTransform here.")]
     public RectTransform arrowUI;
+
+    [Header("Optional Arrow Label")]
+    [Tooltip("Optional TMP/RTLTMPro label shown near the destination arrow.")]
+    public TMP_Text arrowLabel;
+
+    [Tooltip("Text shown beside/above the destination arrow.")]
+    public string arrowLabelText = "مقصد";
+
+    [Tooltip("Screen-pixel offset from the arrow. X=0,Y=55 places the label above it.")]
+    public Vector2 arrowLabelOffsetPixels = new Vector2(0f, 55f);
 
     [Header("2D Projection Fix")]
     [Tooltip("For 2D maps, force the gate's Z to this value before converting to screen position. Use 0 for your map.")]
@@ -182,6 +193,7 @@ public class DestinationGateGuideArrow : MonoBehaviour
         arrowScreen.y = Mathf.Clamp(arrowScreen.y, edgeMarginPixels, Screen.height - edgeMarginPixels);
 
         SetArrowScreenPosition(arrowScreen);
+        UpdateArrowLabel(arrowScreen);
 
         if (forceDownArrowWhenGateVisible)
         {
@@ -229,6 +241,7 @@ public class DestinationGateGuideArrow : MonoBehaviour
         Vector2 arrowScreen = screenCenter + directionToGate * scale;
 
         SetArrowScreenPosition(arrowScreen);
+        UpdateArrowLabel(arrowScreen);
         RotateArrow(directionToGate);
     }
 
@@ -258,6 +271,48 @@ public class DestinationGateGuideArrow : MonoBehaviour
         arrowUI.anchoredPosition = localPoint;
     }
 
+    private void UpdateArrowLabel(Vector2 arrowScreenPosition)
+    {
+        if (arrowLabel == null)
+            return;
+
+        arrowLabel.text = arrowLabelText ?? string.Empty;
+        arrowLabel.gameObject.SetActive(true);
+
+        RectTransform labelRect = arrowLabel.rectTransform;
+        RectTransform labelParent = labelRect.parent as RectTransform;
+
+        Vector2 labelScreenPosition =
+            arrowScreenPosition + arrowLabelOffsetPixels;
+
+        if (labelParent == null)
+        {
+            labelRect.position = labelScreenPosition;
+        }
+        else
+        {
+            Camera uiCamera = null;
+
+            if (parentCanvas != null &&
+                parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                uiCamera = parentCanvas.worldCamera;
+            }
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                labelParent,
+                labelScreenPosition,
+                uiCamera,
+                out Vector2 localPoint
+            );
+
+            labelRect.anchoredPosition = localPoint;
+        }
+
+        // Keep Persian text upright even while the arrow rotates.
+        labelRect.rotation = Quaternion.identity;
+    }
+
     private void RotateArrow(Vector2 direction)
     {
         if (arrowUI == null)
@@ -281,5 +336,8 @@ public class DestinationGateGuideArrow : MonoBehaviour
     {
         if (arrowUI != null)
             arrowUI.gameObject.SetActive(false);
+
+        if (arrowLabel != null)
+            arrowLabel.gameObject.SetActive(false);
     }
 }

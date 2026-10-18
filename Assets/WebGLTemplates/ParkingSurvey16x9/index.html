@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta
+      name="viewport"
+      content="width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    >
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+
+  <body>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width="960" height="540" tabindex="-1"></canvas>
+
+      <div id="unity-loading-bar">
+        <div id="unity-loading-title">{{{ PRODUCT_NAME }}}</div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+
+      <div id="unity-warning"></div>
+
+      <div id="unity-footer">
+        <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
+        <button
+          id="unity-fullscreen-button"
+          type="button"
+          aria-label="Fullscreen"
+          title="Fullscreen"
+        >⛶</button>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.querySelector("#unity-canvas");
+      const unityContainer = document.querySelector("#unity-container");
+      const unityFooter = document.querySelector("#unity-footer");
+      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      function unityShowBanner(msg, type) {
+        const warningBanner = document.querySelector("#unity-warning");
+
+        function updateBannerVisibility() {
+          warningBanner.style.display =
+            warningBanner.children.length ? "block" : "none";
+        }
+
+        const div = document.createElement("div");
+        div.textContent = msg;
+        warningBanner.appendChild(div);
+
+        if (type === "error") {
+          div.className = "unity-error";
+        } else {
+          if (type === "warning") {
+            div.className = "unity-warning-message";
+          }
+
+          setTimeout(function () {
+            if (div.parentNode === warningBanner) {
+              warningBanner.removeChild(div);
+            }
+            updateBannerVisibility();
+          }, 5000);
+        }
+
+        updateBannerVisibility();
+      }
+
+      const buildUrl = "Build";
+      const loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+
+      const config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "{{{ COMPANY_NAME }}}",
+        productName: "{{{ PRODUCT_NAME }}}",
+        productVersion: "{{{ PRODUCT_VERSION }}}",
+        showBanner: unityShowBanner
+      };
+
+      /*
+       * STUDY DISPLAY RULE
+       * ------------------
+       * The Unity game view is always 16:9 on desktop and mobile.
+       * Devices with wider/taller aspect ratios receive margins rather than
+       * seeing more of the game world or stretching the survey UI.
+       */
+      function getViewportSize() {
+        if (window.visualViewport) {
+          return {
+            width: Math.max(1, Math.floor(window.visualViewport.width)),
+            height: Math.max(1, Math.floor(window.visualViewport.height))
+          };
+        }
+
+        return {
+          width: Math.max(
+            1,
+            document.documentElement.clientWidth || window.innerWidth
+          ),
+          height: Math.max(
+            1,
+            document.documentElement.clientHeight || window.innerHeight
+          )
+        };
+      }
+
+      function resizeUnityPlayer() {
+        const viewport = getViewportSize();
+
+        // Desktop keeps the footer. Mobile hides it to maximize the study area.
+        const footerHeight = isMobileDevice
+          ? 0
+          : (unityFooter ? Math.max(38, unityFooter.offsetHeight || 0) : 38);
+
+        // Small desktop breathing room; mobile uses the whole available viewport.
+        const edgeGap = isMobileDevice ? 0 : 12;
+
+        const availableWidth = Math.max(
+          1,
+          viewport.width - (edgeGap * 2)
+        );
+
+        const availableCanvasHeight = Math.max(
+          1,
+          viewport.height - footerHeight - (edgeGap * 2)
+        );
+
+        const targetAspect = 16 / 9;
+
+        let playerWidth = availableWidth;
+        let playerHeight = playerWidth / targetAspect;
+
+        if (playerHeight > availableCanvasHeight) {
+          playerHeight = availableCanvasHeight;
+          playerWidth = playerHeight * targetAspect;
+        }
+
+        playerWidth = Math.floor(playerWidth);
+        playerHeight = Math.floor(playerHeight);
+
+        unityContainer.style.setProperty(
+          "width",
+          playerWidth + "px",
+          "important"
+        );
+
+        unityContainer.style.setProperty(
+          "height",
+          (playerHeight + footerHeight) + "px",
+          "important"
+        );
+
+        canvas.style.setProperty(
+          "width",
+          playerWidth + "px",
+          "important"
+        );
+
+        canvas.style.setProperty(
+          "height",
+          playerHeight + "px",
+          "important"
+        );
+      }
+
+      if (isMobileDevice) {
+        unityContainer.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // Optional performance setting for weaker phones:
+        // config.devicePixelRatio = 1;
+      } else {
+        unityContainer.className = "unity-desktop";
+      }
+
+      resizeUnityPlayer();
+
+      window.addEventListener("resize", resizeUnityPlayer);
+
+      window.addEventListener("orientationchange", function () {
+        setTimeout(resizeUnityPlayer, 50);
+        setTimeout(resizeUnityPlayer, 250);
+      });
+
+      document.addEventListener("fullscreenchange", function () {
+        requestAnimationFrame(resizeUnityPlayer);
+        setTimeout(resizeUnityPlayer, 100);
+      });
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", resizeUnityPlayer);
+      }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      const script = document.createElement("script");
+      script.src = loaderUrl;
+
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          document.querySelector("#unity-progress-bar-full").style.width =
+            (100 * progress) + "%";
+        }).then(function (unityInstance) {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+
+          // Unity can touch the canvas dimensions during startup, so re-apply
+          // the fixed 16:9 rule after initialization.
+          requestAnimationFrame(resizeUnityPlayer);
+          setTimeout(resizeUnityPlayer, 100);
+          setTimeout(resizeUnityPlayer, 500);
+
+          document.querySelector("#unity-fullscreen-button").onclick =
+            function () {
+              unityInstance.SetFullscreen(1);
+              setTimeout(resizeUnityPlayer, 100);
+              setTimeout(resizeUnityPlayer, 500);
+            };
+        }).catch(function (message) {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      crosswalk 2_0: 5212301673469790099
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

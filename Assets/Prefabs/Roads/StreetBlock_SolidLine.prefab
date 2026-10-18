@@ -160,6 +160,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -170,12 +175,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -190,12 +194,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &544609514795014387
 GameObject:
   m_ObjectHideFlags: 0
@@ -358,7 +365,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1330517885
-  m_SortingLayer: -2
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.6075471, g: 0.6075471, b: 0.6075471, a: 1}
@@ -751,6 +758,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -761,12 +773,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -781,12 +792,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &1805672705217068077
 GameObject:
   m_ObjectHideFlags: 0
@@ -896,7 +910,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -983,7 +997,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1157,7 +1171,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -1244,7 +1258,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -1505,7 +1519,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -1592,7 +1606,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1718,7 +1732,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -1806,7 +1820,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.46274513, g: 0.43137258, b: 0.42352945, a: 1}
@@ -1978,7 +1992,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -2226,7 +2240,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -2399,6 +2413,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -2409,12 +2428,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -2429,12 +2447,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &6195477195646478682
 GameObject:
   m_ObjectHideFlags: 0
@@ -2682,6 +2703,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -2692,12 +2718,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -2712,12 +2737,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &7445242076946480491
 GameObject:
   m_ObjectHideFlags: 0
@@ -2878,6 +2906,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -2888,12 +2921,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -2908,12 +2940,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &7520857511449897466
 GameObject:
   m_ObjectHideFlags: 0
@@ -3109,6 +3144,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -3119,12 +3159,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -3139,12 +3178,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &7710269483415836651
 GameObject:
   m_ObjectHideFlags: 0
@@ -3306,7 +3348,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3393,7 +3435,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1330517885
-  m_SortingLayer: -2
+  m_SortingLayer: -3
   m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3480,7 +3522,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3653,6 +3695,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -3663,12 +3710,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -3683,12 +3729,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &8072535084438936616
 GameObject:
   m_ObjectHideFlags: 0
@@ -3849,6 +3898,11 @@ MonoBehaviour:
   parkingAreaKind: 0
   parkingType: 0
   illegalReason: 0
+  parkingPhysicallyBlocked: 0
+  physicallyBlockedMessage: "\u067E\u0627\u0631\u06A9 \u06A9\u0631\u062F\u0646 \u062F\u0631
+    \u0627\u06CC\u0646 \u0645\u062D\u0644 \u0628\u0647 \u062F\u0644\u06CC\u0644 \u0648\u062C\u0648\u062F
+    \u0645\u0627\u0646\u0639 \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0627\u0645\u06A9\u0627\u0646\u200C\u067E\u0630\u06CC\u0631
+    \u0646\u06CC\u0633\u062A."
   legalParkingFeature: 0
   notes: 
   showPersianReasonLabel: 1
@@ -3859,12 +3913,11 @@ MonoBehaviour:
   reasonLabelLocalOffset: {x: 0, y: 0, z: -1}
   reasonLabelCanvasSize: {x: 120, y: 90}
   reasonLabelCanvasScale: 0.01
+  fitReasonLabelInsideSpot: 1
+  reasonLabelMarginFraction: 0.08
+  reasonLabelMinFontSize: 20
+  reasonLabelMaxFontSize: 1000
   reasonLabelFontSize: 30
-  reasonLabelAutoSize: 1
-  reasonLabelAutoSizeMin: 18
-  reasonLabelAutoSizeMax: 200
-  constrainReasonLabelToSprite: 1
-  reasonLabelSpriteBoundsPadding: 0.94
   reasonLabelColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineColor: {r: 0, g: 0, b: 0, a: 1}
   reasonLabelOutlineThickness: 0.307
@@ -3879,12 +3932,15 @@ MonoBehaviour:
   isOccupied: 0
   occupiedByPlayer: 0
   legalFreeColor: {r: 0, g: 1, b: 0, a: 1}
-  illegalFreeColor: {r: 1, g: 0, b: 0, a: 1}
+  illegalFreeColor: {r: 1, g: 0.28235295, b: 0, a: 1}
+  smartParkingFreeColor: {r: 0, g: 1, b: 1, a: 1}
   disabledParkingFreeColor: {r: 0, g: 0, b: 1, a: 1}
-  noParkingZoneFreeColor: {r: 1, g: 0.45, b: 0, a: 1}
+  finedIllegalFreeColor: {r: 0.8980392, g: 0, b: 0, a: 1}
+  noParkingZoneFreeColor: {r: 1, g: 0.92156863, b: 0, a: 1}
   occupiedColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   parkedByPlayerColor: {r: 0, g: 0, b: 1, a: 1}
+  clickMovementTolerancePixels: 15
 --- !u!1 &8321846401787659986
 GameObject:
   m_ObjectHideFlags: 0
@@ -3994,7 +4050,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -4081,7 +4137,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -4168,7 +4224,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -4255,7 +4311,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0.5849056, b: 0.16951914, a: 1}
@@ -4343,7 +4399,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.46274513, g: 0.43137258, b: 0.42352945, a: 1}
@@ -4476,7 +4532,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 173469353
-  m_SortingLayer: -4
+  m_SortingLayer: -5
   m_SortingOrder: 3
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
