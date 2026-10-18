@@ -343,10 +343,11 @@ public class ParkingLogger : MonoBehaviour
             ),
             fineMultiplier = scenario.GetIllegalFineMultiplier(),
             citationProbability = scenario.citationProbability,
-            citationProbabilityStay = Mathf.Clamp01(
-                scenario.citationProbability *
-                Mathf.Max(0f, scenario.dwellTimeMinutes / 60f)
-            ),
+            citationProbabilityStay =
+                ParkingScoreCalculator.CalculateAdjustedCitationProbability(
+                    scenario.citationProbability,
+                    scenario.dwellTimeMinutes
+                ),
             onTimeReward = scenario.onTimeReward,
             targetLegalOccupancy = scenario.legalOccupancyRate,
             targetIllegalOccupancy = scenario.illegalOccupancyRate,
